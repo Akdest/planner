@@ -81,6 +81,16 @@ const DayPlanner = () => {
     }
   };
 
+  // Delete a time slot
+  const deleteTimeSlot = (time: string) => {
+    const updatedSlots = timeSlots.filter((slot) => slot !== time);
+    setTimeSlots(updatedSlots);
+
+    // Remove events associated with the deleted time slot
+    const updatedEvents = events.filter((event) => event.time !== time);
+    setEvents(updatedEvents);
+  };
+
   // Open modal for adding/modifying events
   const openEventModal = (day: string, time: string) => {
     setSelectedCell({ day, time });
@@ -109,9 +119,15 @@ const DayPlanner = () => {
     }
   };
 
+  // Delete event
+  const deleteEvent = (day: string, time: string) => {
+    const updatedEvents = events.filter((e) => !(e.day === day && e.time === time));
+    setEvents(updatedEvents);
+  };
+
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Custom Week-Day Planner</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">Custom Weekday Planner</h1>
 
       {/* Custom Time Slot Input */}
       <div className="flex gap-2 justify-center mb-4">
@@ -149,10 +165,19 @@ const DayPlanner = () => {
             <div key={time} className="contents">
               {/* Time Column - Clickable for Editing */}
               <div
-                className="border p-2 text-center font-semibold cursor-pointer hover:bg-gray-200"
+                className="border p-2 text-center font-semibold cursor-pointer hover:bg-gray-200 flex justify-between items-center"
                 onClick={() => openTimeEditModal(time)}
               >
                 {time}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent modal from opening
+                    deleteTimeSlot(time);
+                  }}
+                  className="ml-2 text-red-600"
+                >
+                  ❌
+                </button>
               </div>
 
               {/* Time Slots */}
@@ -161,10 +186,25 @@ const DayPlanner = () => {
                 return (
                   <div
                     key={`${day}-${time}`}
-                    className="border p-4 text-center cursor-pointer hover:bg-blue-200 transition"
+                    className="border p-4 text-center cursor-pointer hover:bg-blue-200 transition flex justify-between items-center"
                     onClick={() => openEventModal(day, time)}
                   >
-                    {event ? event.event : "+"}
+                    {event ? (
+                      <>
+                        {event.event}{" "}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent modal from opening
+                            deleteEvent(day, time);
+                          }}
+                          className="ml-2 text-red-600"
+                        >
+                          ❌
+                        </button>
+                      </>
+                    ) : (
+                      "+"
+                    )}
                   </div>
                 );
               })}
@@ -172,33 +212,6 @@ const DayPlanner = () => {
           ))}
         </div>
       </div>
-
-      {/* Event Modal */}
-      {selectedCell && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Add/Edit Event</h2>
-            <p className="text-gray-700 mb-2">
-              <strong>{selectedCell.day}</strong> - <strong>{selectedCell.time}</strong>
-            </p>
-            <input
-              type="text"
-              value={eventText}
-              onChange={(e) => setEventText(e.target.value)}
-              placeholder="Enter event"
-              className="border p-2 w-full rounded mb-4"
-            />
-            <div className="flex gap-2">
-              <button onClick={saveEvent} className="bg-green-500 text-white px-4 py-2 rounded">
-                Save
-              </button>
-              <button onClick={() => setSelectedCell(null)} className="bg-red-500 text-white px-4 py-2 rounded">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
