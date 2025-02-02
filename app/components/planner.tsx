@@ -8,17 +8,11 @@ interface EventData {
 }
 
 const Planner = () => {
-  const [timeSlots, setTimeSlots] = useState(["6:00-7:30"]);
+  const [timeSlots, setTimeSlots] = useState(["06:00 - 07:30"]);
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-  // Load events from LocalStorage on mount
-    
-    const [isClient, setIsClient] = useState(false);
-  
- 
-  
-
+  // Function to load events from localStorage
   const loadEvents = (): EventData[] => {
     if (typeof window !== "undefined") {
       const savedEvents = localStorage.getItem("plannerEvents");
@@ -27,32 +21,45 @@ const Planner = () => {
     return [];
   };
 
-  const [events, setEvents] = useState<EventData[]>(loadEvents());
+  const [events, setEvents] = useState<EventData[]>([]);
   const [selectedCell, setSelectedCell] = useState<{ day: string; time: string } | null>(null);
   const [eventText, setEventText] = useState("");
   const [customStartTime, setCustomStartTime] = useState("");
   const [customEndTime, setCustomEndTime] = useState("");
 
-  // Save events to LocalStorage whenever events state changes
+  // Ensure localStorage runs only on client
   useEffect(() => {
-    setIsClient(true); // Ensures localStorage is only accessed on the client
-    const savedEvents = localStorage.getItem("plannerEvents");
-    if (savedEvents) {
-      setEvents(JSON.parse(savedEvents));
-    }
+    setEvents(loadEvents());
   }, []);
+
   useEffect(() => {
-    if (isClient) {
+    if (typeof window !== "undefined") {
       localStorage.setItem("plannerEvents", JSON.stringify(events));
     }
-  }, [events, isClient]);
+  }, [events]);
 
+  // Function to parse and compare times
+  const parseTime = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return new Date(0, 0, 0, hours, minutes);
+  };
 
-  // Function to add custom time slots
+  // Function to add and sort custom time slots
   const addTimeSlot = () => {
     if (customStartTime && customEndTime) {
       const newSlot = `${customStartTime} - ${customEndTime}`;
-      setTimeSlots([...timeSlots, newSlot]);
+
+      // Prevent duplicate entries
+      if (!timeSlots.includes(newSlot)) {
+        const updatedSlots = [...timeSlots, newSlot].sort((a, b) => {
+          const [startA] = a.split(" - ");
+          const [startB] = b.split(" - ");
+          return parseTime(startA).getTime() - parseTime(startB).getTime();
+        });
+
+        setTimeSlots(updatedSlots);
+      }
+
       setCustomStartTime("");
       setCustomEndTime("");
     }
