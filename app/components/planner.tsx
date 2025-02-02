@@ -20,8 +20,11 @@ const Planner = () => {
   
 
   const loadEvents = (): EventData[] => {
-    const savedEvents = localStorage.getItem("plannerEvents");
-    return savedEvents ? JSON.parse(savedEvents) : [];
+    if (typeof window !== "undefined") {
+      const savedEvents = localStorage.getItem("plannerEvents");
+      return savedEvents ? JSON.parse(savedEvents) : [];
+    }
+    return [];
   };
 
   const [events, setEvents] = useState<EventData[]>(loadEvents());
