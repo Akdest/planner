@@ -13,12 +13,18 @@ const Planner = () => {
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   // Load events from LocalStorage on mount
-  const loadEvents = () => {
+    
+    const [isClient, setIsClient] = useState(false);
+  
+ 
+  
+
+  const loadEvents = (): EventData[] => {
     const savedEvents = localStorage.getItem("plannerEvents");
     return savedEvents ? JSON.parse(savedEvents) : [];
   };
 
-  const [events, setEvents] = useState<EventData[]>(loadEvents);
+  const [events, setEvents] = useState<EventData[]>(loadEvents());
   const [selectedCell, setSelectedCell] = useState<{ day: string; time: string } | null>(null);
   const [eventText, setEventText] = useState("");
   const [customStartTime, setCustomStartTime] = useState("");
@@ -26,8 +32,18 @@ const Planner = () => {
 
   // Save events to LocalStorage whenever events state changes
   useEffect(() => {
-    localStorage.setItem("plannerEvents", JSON.stringify(events));
-  }, [events]);
+    setIsClient(true); // Ensures localStorage is only accessed on the client
+    const savedEvents = localStorage.getItem("plannerEvents");
+    if (savedEvents) {
+      setEvents(JSON.parse(savedEvents));
+    }
+  }, []);
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem("plannerEvents", JSON.stringify(events));
+    }
+  }, [events, isClient]);
+
 
   // Function to add custom time slots
   const addTimeSlot = () => {
