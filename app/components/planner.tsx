@@ -9,10 +9,9 @@ interface EventData {
 
 const Planner = () => {
   const [timeSlots, setTimeSlots] = useState(["06:00 - 07:30"]);
-
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-  // Function to load events from localStorage
+  // Load events from LocalStorage
   const loadEvents = (): EventData[] => {
     if (typeof window !== "undefined") {
       const savedEvents = localStorage.getItem("plannerEvents");
@@ -26,8 +25,9 @@ const Planner = () => {
   const [eventText, setEventText] = useState("");
   const [customStartTime, setCustomStartTime] = useState("");
   const [customEndTime, setCustomEndTime] = useState("");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
 
-  // Ensure localStorage runs only on client
+  // Load data only on client
   useEffect(() => {
     setEvents(loadEvents());
   }, []);
@@ -38,38 +38,56 @@ const Planner = () => {
     }
   }, [events]);
 
-  // Function to parse and compare times
+  // Parse and compare times for sorting
   const parseTime = (time: string) => {
     const [hours, minutes] = time.split(":").map(Number);
     return new Date(0, 0, 0, hours, minutes);
   };
 
-  // Function to add and sort custom time slots
-  const addTimeSlot = () => {
+  // Function to add or edit a time slot
+  const saveTimeSlot = () => {
     if (customStartTime && customEndTime) {
       const newSlot = `${customStartTime} - ${customEndTime}`;
 
-      // Prevent duplicate entries
-      if (!timeSlots.includes(newSlot)) {
-        const updatedSlots = [...timeSlots, newSlot].sort((a, b) => {
-          const [startA] = a.split(" - ");
-          const [startB] = b.split(" - ");
-          return parseTime(startA).getTime() - parseTime(startB).getTime();
-        });
+      let updatedSlots = [...timeSlots];
 
-        setTimeSlots(updatedSlots);
+      if (selectedTimeSlot) {
+        // Edit existing time slot
+        updatedSlots = updatedSlots.map((slot) => (slot === selectedTimeSlot ? newSlot : slot));
+        setSelectedTimeSlot(null);
+      } else {
+        // Add new time slot if it's not a duplicate
+        if (!timeSlots.includes(newSlot)) {
+          updatedSlots.push(newSlot);
+        }
       }
 
+      // Sort the time slots in ascending order
+      updatedSlots.sort((a, b) => {
+        const [startA] = a.split(" - ");
+        const [startB] = b.split(" - ");
+        return parseTime(startA).getTime() - parseTime(startB).getTime();
+      });
+
+      setTimeSlots(updatedSlots);
       setCustomStartTime("");
       setCustomEndTime("");
     }
   };
 
   // Open modal for adding/modifying events
-  const openModal = (day: string, time: string) => {
+  const openEventModal = (day: string, time: string) => {
     setSelectedCell({ day, time });
     const existingEvent = events.find((e) => e.day === day && e.time === time);
     setEventText(existingEvent ? existingEvent.event : "");
+  };
+
+  // Open modal to edit a time slot
+  const openTimeEditModal = (time: string) => {
+    setSelectedTimeSlot(time);
+    const [start, end] = time.split(" - ");
+    setCustomStartTime(start);
+    setCustomEndTime(end);
   };
 
   // Save event
@@ -103,8 +121,8 @@ const Planner = () => {
           onChange={(e) => setCustomEndTime(e.target.value)}
           className="border p-2 rounded"
         />
-        <button onClick={addTimeSlot} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Add Time Slot
+        <button onClick={saveTimeSlot} className="bg-blue-500 text-white px-4 py-2 rounded">
+          {selectedTimeSlot ? "Update Time Slot" : "Add Time Slot"}
         </button>
       </div>
 
@@ -123,8 +141,13 @@ const Planner = () => {
           {/* Time Slot Rows */}
           {timeSlots.map((time) => (
             <div key={time} className="contents">
-              {/* Time Column */}
-              <div className="border p-2 text-center font-semibold">{time}</div>
+              {/* Time Column - Clickable for Editing */}
+              <div
+                className="border p-2 text-center font-semibold cursor-pointer hover:bg-gray-200"
+                onClick={() => openTimeEditModal(time)}
+              >
+                {time}
+              </div>
 
               {/* Time Slots */}
               {daysOfWeek.map((day) => {
@@ -133,7 +156,7 @@ const Planner = () => {
                   <div
                     key={`${day}-${time}`}
                     className="border p-4 text-center cursor-pointer hover:bg-blue-200 transition"
-                    onClick={() => openModal(day, time)}
+                    onClick={() => openEventModal(day, time)}
                   >
                     {event ? event.event : "+"}
                   </div>
