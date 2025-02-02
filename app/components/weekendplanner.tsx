@@ -7,7 +7,7 @@ interface EventData {
   event: string;
 }
 
-const DayPlanner = () => {
+const EndPlanner = () => {
   // Load time slots from localStorage
   const loadTimeSlots = (): string[] => {
     if (typeof window !== "undefined") {
@@ -126,7 +126,7 @@ const DayPlanner = () => {
 
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Custom Weekday Planner</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">Custom Weekend Planner</h1>
 
       {/* Custom Time Slot Input */}
       <div className="flex gap-2 justify-center mb-4">
@@ -219,4 +219,4 @@ const DayPlanner = () => {
   );
 };
 
-export default DayPlanner;
+export default EndPlanner;
