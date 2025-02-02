@@ -11,7 +11,7 @@ const EndPlanner = () => {
   // Load time slots from localStorage
   const loadTimeSlots = (): string[] => {
     if (typeof window !== "undefined") {
-      const savedTimeSlots = localStorage.getItem("plannerTimeSlots");
+      const savedTimeSlots = localStorage.getItem("weekendTimeSlots");
       return savedTimeSlots ? JSON.parse(savedTimeSlots) : ["06:00 - 07:30"];
     }
     return ["06:00 - 07:30"];
@@ -22,7 +22,7 @@ const EndPlanner = () => {
   // Load events from localStorage
   const loadEvents = (): EventData[] => {
     if (typeof window !== "undefined") {
-      const savedEvents = localStorage.getItem("plannerEvents");
+      const savedEvents = localStorage.getItem("weekendEvents");
       return savedEvents ? JSON.parse(savedEvents) : [];
     }
     return [];
@@ -39,8 +39,8 @@ const EndPlanner = () => {
   // Save events and time slots to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("plannerEvents", JSON.stringify(events));
-      localStorage.setItem("plannerTimeSlots", JSON.stringify(timeSlots));
+      localStorage.setItem("weekendEvents", JSON.stringify(events));
+      localStorage.setItem("weekendTimeSlots", JSON.stringify(timeSlots));
     }
   }, [events, timeSlots]);
 
@@ -126,7 +126,7 @@ const EndPlanner = () => {
 
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Custom Weekend Planner</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">Weekend Planner (Saturday & Sunday)</h1>
 
       {/* Custom Time Slot Input */}
       <div className="flex gap-2 justify-center mb-4">
@@ -150,7 +150,7 @@ const EndPlanner = () => {
       {/* Scrollable Planner */}
       <div className="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[80vh]">
         {/* Planner Grid */}
-        <div className="grid grid-cols-3 min-w-[700px] border">
+        <div className="grid grid-cols-3 min-w-[500px] border">
           {/* Header Row */}
           <div className="border p-2 font-bold text-center">Time / Day</div>
           {daysOfWeek.map((day) => (
