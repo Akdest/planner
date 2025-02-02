@@ -8,7 +8,7 @@ interface EventData {
 }
 
 const DayPlanner = () => {
-  // Load time slots from localStorage if available
+  // Load time slots from localStorage
   const loadTimeSlots = (): string[] => {
     if (typeof window !== "undefined") {
       const savedTimeSlots = localStorage.getItem("plannerTimeSlots");
@@ -44,7 +44,7 @@ const DayPlanner = () => {
     }
   }, [events, timeSlots]);
 
-  // Parse and compare times for sorting
+  // Function to parse and compare times for sorting
   const parseTime = (time: string) => {
     const [hours, minutes] = time.split(":").map(Number);
     return new Date(0, 0, 0, hours, minutes);
@@ -83,12 +83,8 @@ const DayPlanner = () => {
 
   // Delete a time slot
   const deleteTimeSlot = (time: string) => {
-    const updatedSlots = timeSlots.filter((slot) => slot !== time);
-    setTimeSlots(updatedSlots);
-
-    // Remove events associated with the deleted time slot
-    const updatedEvents = events.filter((event) => event.time !== time);
-    setEvents(updatedEvents);
+    setTimeSlots(timeSlots.filter((slot) => slot !== time));
+    setEvents(events.filter((event) => event.time !== time));
   };
 
   // Open modal for adding/modifying events
@@ -119,10 +115,13 @@ const DayPlanner = () => {
     }
   };
 
-  // Delete event
-  const deleteEvent = (day: string, time: string) => {
-    const updatedEvents = events.filter((e) => !(e.day === day && e.time === time));
-    setEvents(updatedEvents);
+  // Delete an event
+  const deleteEvent = () => {
+    if (selectedCell) {
+      setEvents(events.filter((e) => !(e.day === selectedCell.day && e.time === selectedCell.time)));
+      setSelectedCell(null);
+      setEventText("");
+    }
   };
 
   return (
@@ -148,7 +147,7 @@ const DayPlanner = () => {
         </button>
       </div>
 
-      {/* Scrollable Container */}
+      {/* Scrollable Planner */}
       <div className="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[80vh]">
         {/* Planner Grid */}
         <div className="grid grid-cols-6 min-w-[700px] border">
@@ -163,21 +162,13 @@ const DayPlanner = () => {
           {/* Time Slot Rows */}
           {timeSlots.map((time) => (
             <div key={time} className="contents">
-              {/* Time Column - Clickable for Editing */}
+              {/* Time Column with Delete Option */}
               <div
                 className="border p-2 text-center font-semibold cursor-pointer hover:bg-gray-200 flex justify-between items-center"
                 onClick={() => openTimeEditModal(time)}
               >
                 {time}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent modal from opening
-                    deleteTimeSlot(time);
-                  }}
-                  className="ml-2 text-red-600"
-                >
-                  ❌
-                </button>
+                <button onClick={() => deleteTimeSlot(time)} className="text-red-600 ml-2">❌</button>
               </div>
 
               {/* Time Slots */}
@@ -186,25 +177,10 @@ const DayPlanner = () => {
                 return (
                   <div
                     key={`${day}-${time}`}
-                    className="border p-4 text-center cursor-pointer hover:bg-blue-200 transition flex justify-between items-center"
+                    className="border p-4 text-center cursor-pointer hover:bg-blue-200 transition"
                     onClick={() => openEventModal(day, time)}
                   >
-                    {event ? (
-                      <>
-                        {event.event}{" "}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent modal from opening
-                            deleteEvent(day, time);
-                          }}
-                          className="ml-2 text-red-600"
-                        >
-                          ❌
-                        </button>
-                      </>
-                    ) : (
-                      "+"
-                    )}
+                    {event ? event.event : "+"}
                   </div>
                 );
               })}
@@ -212,6 +188,33 @@ const DayPlanner = () => {
           ))}
         </div>
       </div>
+
+      {/* Event Modal */}
+      {selectedCell && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Add/Edit Event</h2>
+            <input
+              type="text"
+              value={eventText}
+              onChange={(e) => setEventText(e.target.value)}
+              placeholder="Enter event"
+              className="border p-2 w-full rounded mb-4"
+            />
+            <div className="flex gap-2">
+              <button onClick={saveEvent} className="bg-green-500 text-white px-4 py-2 rounded">
+                Save
+              </button>
+              <button onClick={deleteEvent} className="bg-red-500 text-white px-4 py-2 rounded">
+                Delete
+              </button>
+              <button onClick={() => setSelectedCell(null)} className="bg-gray-500 text-white px-4 py-2 rounded">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
