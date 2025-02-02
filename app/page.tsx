@@ -1,13 +1,15 @@
 "use client";
 import React from "react";
-import Planner from "./components/planner";
+import DayPlanner from "./components/weekdayplanner";
+import EndPlanner from "./components/weekendplanner";
 
 export default function Home() {
  
 
 return (
   <>
-  <Planner/>
+  <DayPlanner/>
+  <EndPlanner/>
   </>
 );  
 }

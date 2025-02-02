@@ -7,7 +7,7 @@ interface EventData {
   event: string;
 }
 
-const Planner = () => {
+const EndPlanner = () => {
   // Load time slots from localStorage if available
   const loadTimeSlots = (): string[] => {
     if (typeof window !== "undefined") {
@@ -17,7 +17,7 @@ const Planner = () => {
     return ["06:00 - 07:30"];
   };
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const daysOfWeek = ["Saturday", "Sunday"];
 
   // Load events from localStorage
   const loadEvents = (): EventData[] => {
@@ -111,7 +111,7 @@ const Planner = () => {
 
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Custom Weekly Planner</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">Custom Week-End Planner</h1>
 
       {/* Custom Time Slot Input */}
       <div className="flex gap-2 justify-center mb-4">
@@ -135,7 +135,7 @@ const Planner = () => {
       {/* Scrollable Container */}
       <div className="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[80vh]">
         {/* Planner Grid */}
-        <div className="grid grid-cols-8 min-w-[700px] border">
+        <div className="grid grid-cols-3 min-w-[700px] border">
           {/* Header Row */}
           <div className="border p-2 font-bold text-center">Time / Day</div>
           {daysOfWeek.map((day) => (
@@ -203,4 +203,4 @@ const Planner = () => {
   );
 };
 
-export default Planner;
+export default EndPlanner;
