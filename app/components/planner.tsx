@@ -8,10 +8,18 @@ interface EventData {
 }
 
 const Planner = () => {
-  const [timeSlots, setTimeSlots] = useState(["06:00 - 07:30"]);
+  // Load time slots from localStorage if available
+  const loadTimeSlots = (): string[] => {
+    if (typeof window !== "undefined") {
+      const savedTimeSlots = localStorage.getItem("plannerTimeSlots");
+      return savedTimeSlots ? JSON.parse(savedTimeSlots) : ["06:00 - 07:30"];
+    }
+    return ["06:00 - 07:30"];
+  };
+
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-  // Load events from LocalStorage
+  // Load events from localStorage
   const loadEvents = (): EventData[] => {
     if (typeof window !== "undefined") {
       const savedEvents = localStorage.getItem("plannerEvents");
@@ -20,23 +28,21 @@ const Planner = () => {
     return [];
   };
 
-  const [events, setEvents] = useState<EventData[]>([]);
+  const [timeSlots, setTimeSlots] = useState<string[]>(loadTimeSlots());
+  const [events, setEvents] = useState<EventData[]>(loadEvents());
   const [selectedCell, setSelectedCell] = useState<{ day: string; time: string } | null>(null);
   const [eventText, setEventText] = useState("");
   const [customStartTime, setCustomStartTime] = useState("");
   const [customEndTime, setCustomEndTime] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
 
-  // Load data only on client
-  useEffect(() => {
-    setEvents(loadEvents());
-  }, []);
-
+  // Save events and time slots to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("plannerEvents", JSON.stringify(events));
+      localStorage.setItem("plannerTimeSlots", JSON.stringify(timeSlots));
     }
-  }, [events]);
+  }, [events, timeSlots]);
 
   // Parse and compare times for sorting
   const parseTime = (time: string) => {
